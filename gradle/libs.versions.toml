@@ -1,5 +1,6 @@
 [versions]
 agp = "8.11.2"
+glide_version = "1.0.0-beta09"
 kotlin = "2.0.21"
 coreKtx = "1.18.0"
 junit = "4.13.2"
@@ -11,6 +12,7 @@ composeBom = "2024.09.00"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+glide = { module = "com.github.bumptech.glide:compose", version.ref = "glide_version" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

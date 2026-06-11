@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.tsynytsyna.animations.paralax_onboarding.OnboardingScreen
+import com.tsynytsyna.animations.gallery_disintegration.GalleryDemo
 import com.tsynytsyna.animations.ui.theme.AnimationsTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AnimationsTheme {
                 Scaffold { innerPadding ->
-                    OnboardingScreen(modifier = Modifier.padding(innerPadding))
+                    GalleryDemo(Modifier.padding(innerPadding))
                 }
             }
         }
