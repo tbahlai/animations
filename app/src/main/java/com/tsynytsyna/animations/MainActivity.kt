@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.tsynytsyna.animations.glass_shatter.GlassShatterEffectDemo
+import com.tsynytsyna.animations.rift_toggle.RiftDemo
 import com.tsynytsyna.animations.ui.theme.AnimationsTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AnimationsTheme {
                 Scaffold { innerPadding ->
-                    GlassShatterEffectDemo(Modifier.padding(innerPadding))
+                    RiftDemo(Modifier.padding(innerPadding))
                 }
             }
         }
