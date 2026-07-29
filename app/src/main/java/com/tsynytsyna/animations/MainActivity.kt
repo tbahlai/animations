@@ -7,8 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.tsynytsyna.animations.fan_cards.FanCardsDemo
 import com.tsynytsyna.animations.ui.theme.AnimationsTheme
+import com.tsynytsyna.animations.wave_reassembly.WaveReassemblyDemo
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AnimationsTheme {
                 Scaffold { innerPadding ->
-                    FanCardsDemo(Modifier.padding(innerPadding))
+                    WaveReassemblyDemo(Modifier.padding(innerPadding))
                 }
             }
         }
