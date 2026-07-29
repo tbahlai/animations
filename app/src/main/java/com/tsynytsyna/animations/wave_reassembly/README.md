@@ -101,38 +101,24 @@ with the photo.
 
 ---
 
-## Performance
+## How to Run
 
-Measured on a Galaxy S21 (Android 13), full-screen photo, `tileSize = 10` ≈ 16 700 tiles.
+To use the effect in your own screen instead, wrap your content and trigger it once the
+content you want to reveal is in place:
 
-The naive version of this effect — every tile live at once, as in
-[`magnetic_reassemble`](../magnetic_reassemble) and `marvel_effects/ReverseSnap` — ran at
-**28–42 ms per frame** while the GPU sat at 2–6 ms. The bottleneck was never the GPU. Four
-things fixed it:
+    val state = rememberWaveReassemblyState()
 
-| Change                             | Why it mattered                                                                                                                                                                                                                                    |
-|------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **The ring**                       | Only tiles inside a `BAND`-wide annulus are live; the rest of the frame is one clipped `drawImage`. Everything else below is a constant factor — this one is the order of magnitude                                                                |
-| **Direct `nativeCanvas.drawRect`** | `DrawScope.drawRect` reconfigures its paint per call — colour, alpha, blend mode, colour filter — several JNI hops per tile. One shared `Paint`, alpha packed into the colour's own channel, antialiasing off (the tiles are axis-aligned squares) |
-| **Primitive arrays**               | `CellField` is nine parallel arrays, not a list of 16 700 objects, and the buffers are **reused across runs** since the container size does not change                                                                                             |
-| **Off-frame culling**              | Tiles spawn well outside the frame; four comparisons are cheaper than the draw they would cost                                                                                                                                                     |
+    WaveReassembly(state, Modifier.fillMaxSize()) {
+        // your content here
+    }
 
-Two approaches were tried and rejected:
+    // later — swap first, then assemble
+    currentIndex = nextIndex
+    state.assemble {
+        // optional: run something once the frame is whole again
+    }
 
-- **`Canvas.drawVertices`** to batch every tile into a single native call. On this pipeline the
-  per-vertex colour array is ignored and every tile comes out the Paint's colour — solid
-  black. Do not re-attempt without checking on-device first.
-- **Warming up on a small bitmap.** The first run also pays for JIT, heap growth and the
-  GPU→CPU readback, which lands as a visible freeze because nothing is drawn while the tiles
-  are being built. A 384×384 warm-up bitmap warmed the code but neither the readback nor the
-  heap. What works is a **dry run at the container's real size** — see below.
-
-### The startup dry run
-
-`LaunchedEffect(Unit)` performs a full silent capture-and-build at startup, so the first real
-run does not pay that bill on screen. It **retries** up to `WARM_UP_ATTEMPTS` times: the
-content is often still blank this early, and a dry run over transparent pixels warms the
-sampling loop but never the half that fills the buffers.
+`state.isRunning` is exposed so you can disable controls while the effect plays.
 
 ---
 
