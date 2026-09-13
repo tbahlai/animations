@@ -17,6 +17,36 @@ import kotlin.math.sqrt
 
 object LensingRenderer {
 
+    private class ThemeColorCache(theme: LensingTheme) {
+        val haloGradient = listOf(
+            theme.primaryColor.copy(alpha = 0.85f),
+            theme.secondaryColor.copy(alpha = 0.55f),
+            theme.primaryColor.copy(alpha = 0.15f),
+            Color.Transparent
+        )
+        val einsteinRingGlow = listOf(
+            theme.primaryColor.copy(alpha = 0.28f),
+            theme.secondaryColor.copy(alpha = 0.08f),
+            Color.Transparent
+        )
+        val photonSphereGlow = listOf(
+            Color.Transparent,
+            theme.coreGlowColor.copy(alpha = 0.75f),
+            Color.White.copy(alpha = 0.95f),
+            theme.primaryColor.copy(alpha = 0.45f),
+            Color.Transparent
+        )
+        val dopplerColorStops = arrayOf(
+            0.0f to Color.White.copy(alpha = 0.95f),
+            0.25f to theme.primaryColor.copy(alpha = 0.9f),
+            0.65f to theme.secondaryColor.copy(alpha = 0.65f),
+            1.0f to theme.secondaryColor.copy(alpha = 0.25f)
+        )
+    }
+
+    private val themeCaches = LensingTheme.entries.associateWith { ThemeColorCache(it) }
+    private val scratchGridPath = Path()
+
     fun render(
         drawScope: DrawScope,
         engine: LensingEngine
@@ -77,7 +107,7 @@ object LensingRenderer {
         // Horizontal Spacetime Lines
         var y = 60f
         while (y < h - 40f) {
-            val path = Path()
+            scratchGridPath.reset()
             var first = true
             var x = 0f
             while (x <= w) {
@@ -95,16 +125,16 @@ object LensingRenderer {
 
                 if (dist > rs * 0.8f) {
                     if (first) {
-                        path.moveTo(warpedX, warpedY)
+                        scratchGridPath.moveTo(warpedX, warpedY)
                         first = false
                     } else {
-                        path.lineTo(warpedX, warpedY)
+                        scratchGridPath.lineTo(warpedX, warpedY)
                     }
                 }
                 x += 35f
             }
             drawPath(
-                path = path,
+                path = scratchGridPath,
                 color = if (kotlin.math.abs(y - sy) < rs * 2.5f) funnelColor else gridColor,
                 style = Stroke(width = 1.2f)
             )
@@ -114,7 +144,7 @@ object LensingRenderer {
         // Vertical Spacetime Lines
         var x = 40f
         while (x < w) {
-            val path = Path()
+            scratchGridPath.reset()
             var first = true
             var currentY = 80f
             while (currentY <= h - 40f) {
@@ -131,16 +161,16 @@ object LensingRenderer {
 
                 if (dist > rs * 0.8f) {
                     if (first) {
-                        path.moveTo(warpedX, warpedY)
+                        scratchGridPath.moveTo(warpedX, warpedY)
                         first = false
                     } else {
-                        path.lineTo(warpedX, warpedY)
+                        scratchGridPath.lineTo(warpedX, warpedY)
                     }
                 }
                 currentY += 35f
             }
             drawPath(
-                path = path,
+                path = scratchGridPath,
                 color = if (kotlin.math.abs(x - sx) < rs * 2.5f) funnelColor else gridColor,
                 style = Stroke(width = 1.2f)
             )
@@ -215,17 +245,12 @@ object LensingRenderer {
         val haloRadius = rs * 1.72f
         val haloThickness = rs * 0.55f
 
-        // The background accretion disk is warped by gravity up over the top of the event horizon
+        val cache = themeCaches[theme]
         withTransform({
             rotate(degrees = theme.diskAngleDeg * 0.5f, pivot = Offset(sx, sy))
         }) {
             val haloBrush = Brush.radialGradient(
-                colors = listOf(
-                    theme.primaryColor.copy(alpha = 0.85f),
-                    theme.secondaryColor.copy(alpha = 0.55f),
-                    theme.primaryColor.copy(alpha = 0.15f),
-                    Color.Transparent
-                ),
+                colors = cache?.haloGradient ?: listOf(theme.primaryColor, Color.Transparent),
                 center = Offset(sx, sy - haloRadius * 0.35f),
                 radius = haloRadius + haloThickness
             )
@@ -270,14 +295,21 @@ object LensingRenderer {
         }) {
             // Asymmetric Doppler beaming: Approaching limb (left side) is boosted and blue-shifted;
             // receding limb (right side) is red-shifted and dimmer.
-            val dopplerBrush = Brush.horizontalGradient(
-                0.0f to Color.White.copy(alpha = 0.95f),
-                0.25f to theme.primaryColor.copy(alpha = 0.9f),
-                0.65f to theme.secondaryColor.copy(alpha = 0.65f),
-                1.0f to theme.secondaryColor.copy(alpha = 0.25f),
-                startX = sx - diskOuterR,
-                endX = sx + diskOuterR
-            )
+            val cache = themeCaches[theme]
+            val dopplerBrush = if (cache != null) {
+                Brush.horizontalGradient(
+                    colorStops = cache.dopplerColorStops,
+                    startX = sx - diskOuterR,
+                    endX = sx + diskOuterR
+                )
+            } else {
+                Brush.horizontalGradient(
+                    0.0f to Color.White.copy(alpha = 0.95f),
+                    1.0f to theme.secondaryColor.copy(alpha = 0.25f),
+                    startX = sx - diskOuterR,
+                    endX = sx + diskOuterR
+                )
+            }
 
             // Primary glowing accretion torus
             drawCircle(
@@ -348,14 +380,12 @@ object LensingRenderer {
         re: Float,
         theme: LensingTheme
     ) {
+        val cache = themeCaches[theme]
+
         // 1. Outer Gravitational Lensing Halo / Einstein Ring ambient glow
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(
-                    theme.primaryColor.copy(alpha = 0.28f),
-                    theme.secondaryColor.copy(alpha = 0.08f),
-                    Color.Transparent
-                ),
+                colors = cache?.einsteinRingGlow ?: listOf(theme.primaryColor, Color.Transparent),
                 center = Offset(sx, sy),
                 radius = re * 1.35f
             ),
@@ -366,13 +396,7 @@ object LensingRenderer {
         // 2. Photon Sphere radiant glow
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(
-                    Color.Transparent,
-                    theme.coreGlowColor.copy(alpha = 0.75f),
-                    Color.White.copy(alpha = 0.95f),
-                    theme.primaryColor.copy(alpha = 0.45f),
-                    Color.Transparent
-                ),
+                colors = cache?.photonSphereGlow ?: listOf(Color.White, Color.Transparent),
                 center = Offset(sx, sy),
                 radius = photonR * 1.25f
             ),

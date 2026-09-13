@@ -75,10 +75,14 @@ import kotlin.math.sin
 fun BoidsSwarmDemo(
     modifier: Modifier = Modifier
 ) {
+    val tier = com.tsynytsyna.animations.core.rememberPerformanceTier()
+
     // Current visual theme and interaction mode
     var currentTheme by remember { mutableStateOf(BoidTheme.STARLING_DUSK) }
     var interactionMode by remember { mutableStateOf(BoidInteractionMode.ATTRACT) }
-    var activeBoidCount by remember { mutableIntStateOf(1400) }
+    var activeBoidCount by remember(tier) {
+        mutableIntStateOf(com.tsynytsyna.animations.core.DeviceTierManager.getRecommendedBoidCount(tier))
+    }
     var showInspector by remember { mutableStateOf(false) }
 
     // Reynolds steering weights
@@ -250,7 +254,7 @@ fun BoidsSwarmDemo(
                     )
 
                     Text(
-                        text = "${engine.config.activeBoidsCount} BOIDS",
+                        text = "${engine.config.activeBoidsCount} BOIDS [${tier.name}]",
                         color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,

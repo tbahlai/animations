@@ -25,6 +25,49 @@ import kotlin.math.sqrt
 object MetaballSplineRenderer {
 
     private val bridgePath = Path()
+    private val neckHighlightPath = Path()
+
+    // Pre-allocated static gradient color lists to prevent per-frame GC thrashing
+    private val shadowGradientColors = listOf(
+        Color.Black.copy(alpha = 0.42f),
+        Color.Transparent
+    )
+    private val glintGradientColors = listOf(
+        Color.White.copy(alpha = 0.88f),
+        Color.White.copy(alpha = 0.40f),
+        Color.Transparent
+    )
+
+    // Cached theme palette color lists
+    private class ThemeColorCache(theme: FluidTheme) {
+        val primary = Color(theme.primaryColorHex)
+        val secondary = Color(theme.secondaryColorHex)
+        val glow = Color(theme.glowColorHex)
+        val specular = Color(theme.specularColorHex)
+
+        val bridgeColors = listOf(
+            secondary.copy(alpha = 0.95f),
+            primary,
+            secondary.copy(alpha = 0.95f)
+        )
+        val haloColors = listOf(
+            glow.copy(alpha = 0.38f),
+            glow.copy(alpha = 0.12f),
+            Color.Transparent
+        )
+        val volumeColors = listOf(
+            specular.copy(alpha = 0.90f),
+            primary,
+            secondary,
+            Color(0xFF10141D)
+        )
+        val bounceColors = listOf(
+            glow.copy(alpha = 0.45f),
+            Color.Transparent
+        )
+    }
+
+    private val themeCaches = FluidTheme.entries.associateWith { ThemeColorCache(it) }
 
     /**
      * Renders all fluid droplets, connecting liquid bridges, specular reflections, and ambient depth.
@@ -39,10 +82,11 @@ object MetaballSplineRenderer {
         val count = droplets.size
         if (count == 0) return
 
-        val primaryColor = Color(theme.primaryColorHex)
-        val secondaryColor = Color(theme.secondaryColorHex)
-        val glowColor = Color(theme.glowColorHex)
-        val specularColor = Color(theme.specularColorHex)
+        val cache = themeCaches[theme] ?: return
+        val primaryColor = cache.primary
+        val secondaryColor = cache.secondary
+        val glowColor = cache.glow
+        val specularColor = cache.specular
 
         // 1. Draw ambient fluid shadow underneath
         for (i in 0 until count) {
@@ -53,10 +97,7 @@ object MetaballSplineRenderer {
 
             scope.drawOval(
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color.Black.copy(alpha = 0.42f),
-                        Color.Transparent
-                    ),
+                    colors = shadowGradientColors,
                     center = Offset(d.x, shadowY),
                     radius = shadowRx * 1.3f
                 ),
@@ -83,10 +124,7 @@ object MetaballSplineRenderer {
                         b = b,
                         dist = dist,
                         maxDist = maxDist,
-                        primaryColor = primaryColor,
-                        secondaryColor = secondaryColor,
-                        glowColor = glowColor,
-                        theme = theme
+                        cache = cache
                     )
                 }
             }
@@ -98,11 +136,7 @@ object MetaballSplineRenderer {
             drawDroplet(
                 scope = scope,
                 droplet = d,
-                primaryColor = primaryColor,
-                secondaryColor = secondaryColor,
-                glowColor = glowColor,
-                specularColor = specularColor,
-                theme = theme
+                cache = cache
             )
         }
     }
@@ -116,10 +150,7 @@ object MetaballSplineRenderer {
         b: FluidDroplet,
         dist: Float,
         maxDist: Float,
-        primaryColor: Color,
-        secondaryColor: Color,
-        glowColor: Color,
-        theme: FluidTheme,
+        cache: ThemeColorCache,
     ) {
         val r1 = a.radius
         val r2 = b.radius
@@ -179,11 +210,7 @@ object MetaballSplineRenderer {
 
         // Bridge volume fill
         val bridgeBrush = Brush.linearGradient(
-            colors = listOf(
-                secondaryColor.copy(alpha = 0.95f),
-                primaryColor,
-                secondaryColor.copy(alpha = 0.95f)
-            ),
+            colors = cache.bridgeColors,
             start = Offset(a.x, a.y),
             end = Offset(b.x, b.y)
         )
@@ -191,7 +218,7 @@ object MetaballSplineRenderer {
 
         // Subtle specular highlight line along the stretched liquid neck
         if (stretchRatio < 0.88f) {
-            val neckHighlightPath = Path()
+            neckHighlightPath.reset()
             val highlightOffset = waistThickness * 0.45f
             neckHighlightPath.moveTo(
                 (p1aX * 0.7f + p2aX * 0.3f),
@@ -219,11 +246,7 @@ object MetaballSplineRenderer {
     private fun drawDroplet(
         scope: DrawScope,
         droplet: FluidDroplet,
-        primaryColor: Color,
-        secondaryColor: Color,
-        glowColor: Color,
-        specularColor: Color,
-        theme: FluidTheme,
+        cache: ThemeColorCache,
     ) {
         val r = droplet.radius
 
@@ -242,11 +265,7 @@ object MetaballSplineRenderer {
             // Outer glow halo
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        glowColor.copy(alpha = 0.38f),
-                        glowColor.copy(alpha = 0.12f),
-                        Color.Transparent
-                    ),
+                    colors = cache.haloColors,
                     center = Offset.Zero,
                     radius = r * 1.35f
                 ),
@@ -258,12 +277,7 @@ object MetaballSplineRenderer {
             val lightSourceOffset = Offset(-r * 0.32f, -r * 0.36f)
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        specularColor.copy(alpha = 0.90f),
-                        primaryColor,
-                        secondaryColor,
-                        Color(0xFF10141D)
-                    ),
+                    colors = cache.volumeColors,
                     center = lightSourceOffset,
                     radius = r * 1.15f
                 ),
@@ -287,11 +301,7 @@ object MetaballSplineRenderer {
 
             drawOval(
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.88f),
-                        Color.White.copy(alpha = 0.40f),
-                        Color.Transparent
-                    ),
+                    colors = glintGradientColors,
                     center = Offset(glintCenterX, glintCenterY),
                     radius = glintRadiusX
                 ),
@@ -307,10 +317,7 @@ object MetaballSplineRenderer {
 
             drawOval(
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        glowColor.copy(alpha = 0.45f),
-                        Color.Transparent
-                    ),
+                    colors = cache.bounceColors,
                     center = Offset(bounceCenterX, bounceCenterY),
                     radius = bounceRadiusX
                 ),
