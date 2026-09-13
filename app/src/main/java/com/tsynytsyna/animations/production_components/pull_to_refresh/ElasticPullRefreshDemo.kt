@@ -114,22 +114,20 @@ fun ElasticPullRefreshDemo(modifier: Modifier = Modifier) {
 
     val state = rememberElasticPullRefreshState(
         onRefresh = {
-            coroutineScope.launch {
-                // Simulate asynchronous backend fetch
-                delay(2000)
-                articles.add(
-                    0,
-                    FeedArticle(
-                        id = articles.size + 1,
-                        title = "Live Synced Update #${articles.size + 1}",
-                        category = "REALTIME STREAM",
-                        timestamp = "JUST NOW",
-                        snippet = "Fresh payload streamed through elastic pull-to-refresh architecture.",
-                        readTime = "2 MIN READ",
-                        tagColor = Color(0xFFD946EF)
-                    )
+            // Simulate asynchronous backend fetch
+            delay(2000)
+            articles.add(
+                0,
+                FeedArticle(
+                    id = articles.size + 1,
+                    title = "Live Synced Update #${articles.size + 1}",
+                    category = "REALTIME STREAM",
+                    timestamp = "JUST NOW",
+                    snippet = "Fresh payload streamed through elastic pull-to-refresh architecture.",
+                    readTime = "2 MIN READ",
+                    tagColor = Color(0xFFD946EF)
                 )
-            }
+            )
         }
     )
 
@@ -173,45 +171,116 @@ fun ElasticPullRefreshDemo(modifier: Modifier = Modifier) {
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Diagnostics floating pill row inside list
+                // Diagnostics & Physics Telemetry Card
                 item {
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF101626).copy(alpha = 0.92f)
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            when (state.motionState) {
+                                PullMotionState.DRAGGING -> Color(0xFF10B981)
+                                PullMotionState.SETTLING -> Color(0xFFF59E0B)
+                                PullMotionState.REFRESHING -> Color(0xFF00E5FF)
+                                PullMotionState.IDLE -> Color.White.copy(alpha = 0.12f)
+                            }
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showInspector = true }
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(100.dp))
-                                .background(Color(0xFF101624).copy(alpha = 0.85f))
-                                .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(100.dp))
-                                .clickable { showInspector = true }
-                                .padding(horizontal = 14.dp, vertical = 7.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(7.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFFF2A55))
-                            )
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(
+                                                when (state.motionState) {
+                                                    PullMotionState.DRAGGING -> Color(0xFF10B981)
+                                                    PullMotionState.SETTLING -> Color(0xFFF59E0B)
+                                                    PullMotionState.REFRESHING -> Color(0xFF00E5FF)
+                                                    PullMotionState.IDLE -> Color(0xFF64748B)
+                                                }
+                                            )
+                                    )
+                                    Text(
+                                        text = "PHYSICS: ${state.motionState.name}",
+                                        color = Color.White,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Black,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = "${state.effectivePullPx.roundToInt()}PX",
+                                        color = Color(0xFFFF2A55),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = "Info",
+                                        tint = Color.White.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val vel = state.lastReleaseVelocity.roundToInt()
+                                val velArrow = if (vel > 100) "↓" else if (vel < -100) "↑" else "—"
+                                Text(
+                                    text = "RELEASE VEL: $vel PX/S $velArrow",
+                                    color = Color.White.copy(alpha = 0.75f),
+                                    fontSize = 9.5.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+
+                                Text(
+                                    text = "INTERRUPTED: ${state.interruptionsCount}×",
+                                    color = if (state.interruptionsCount > 0) Color(0xFF10B981) else Color.White.copy(alpha = 0.5f),
+                                    fontSize = 9.5.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
                             Text(
-                                text = "HOOKE SOLVER • PULL: ${state.effectivePullPx.roundToInt()}PX (${(state.progress * 100).roundToInt()}%)",
-                                color = Color.White.copy(alpha = 0.9f),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
-                            )
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Info",
-                                tint = Color(0xFFFF2A55),
-                                modifier = Modifier.size(15.dp)
+                                text = "Fling release to carry momentum into settling • Re-grab mid-motion to test C⁰ continuous position.",
+                                color = Color.White.copy(alpha = 0.48f),
+                                fontSize = 9.sp,
+                                lineHeight = 12.sp
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
 
                 items(articles, key = { it.id }) { article ->
@@ -360,9 +429,9 @@ fun ElasticPullRefreshDemo(modifier: Modifier = Modifier) {
                     }
 
                     Text(
-                        text = "Connects NestedScrollConnection to an elastic typography spring engine. Pulling down calculates non-linear hyperbolic resistance d = d_max * tanh(pull/d_max) with volume-conserving glyph squash & stretch and harmonic sine waves during network loading.",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.65f),
+                        text = "1. HYPERBOLIC RESISTANCE: d = d_max * tanh(pull/d_max) with volume-conserving glyph squash & stretch.\n\n2. VELOCITY CONTINUITY: onPreFling captures fling release velocity (px/s) and passes it directly as initialVelocity into spring(DampingRatioMediumBouncy, StiffnessMediumLow).\n\n3. ZERO-POP INTERRUPTIBILITY: Touching down mid-settling cancels the background spring job, freezing the header at its exact instantaneous coordinate (C⁰ positional continuity) and handing drag control back to the finger seamlessly.",
+                        fontSize = 11.5.sp,
+                        color = Color.White.copy(alpha = 0.72f),
                         lineHeight = 17.sp
                     )
 

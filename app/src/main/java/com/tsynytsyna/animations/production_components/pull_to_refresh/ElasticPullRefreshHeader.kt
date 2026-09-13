@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -59,6 +60,7 @@ fun ElasticPullRefreshHeader(
 
     val n = word.length
     val containerHeight = (pullPx / 2.7f).coerceIn(40f, 180f).dp
+    val spline = remember { Path() }
 
     Box(
         modifier = modifier
@@ -105,7 +107,7 @@ fun ElasticPullRefreshHeader(
 
             // Continuous elastic baseline spline
             if (points.size >= 2) {
-                val spline = Path()
+                spline.reset()
                 spline.moveTo(points[0].x, points[0].y)
                 for (i in 0 until points.size - 1) {
                     val p0 = points[i]
