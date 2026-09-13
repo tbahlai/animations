@@ -78,8 +78,8 @@ This keeps the effect self-contained: pass a list of URLs and it runs.
 
     CoverFlow(
         photos = listOf(
-            "https://picsum.photos/id/1084/600/600",
-            "https://picsum.photos/id/1080/600/600",
+            "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1080&q=85",
+            "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=1080&q=85",
             // ...
         ),
         cardSize = 250.dp,

@@ -81,8 +81,8 @@ immediately.
 
     FanCards(
         photos = listOf(
-            "https://picsum.photos/id/1080/600/600",
-            "https://picsum.photos/id/1074/600/600",
+            "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1080&q=85",
+            "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1080&q=85",
             // ...
         ),
     )

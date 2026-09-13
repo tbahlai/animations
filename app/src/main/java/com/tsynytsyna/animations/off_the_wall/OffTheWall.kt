@@ -109,38 +109,42 @@ fun OffTheWall(
 
     Box(
         modifier = modifier
-            .pointerInput(Unit) {
-                val slop = viewConfiguration.touchSlop
-                awaitPointerEventScope {
-                    while (true) {
-                        val down = awaitFirstDown(requireUnconsumed = false)
-                        val sheet = state.sheet
-                        var holding = false
-                        var travelled = 0f
-                        var previousPosition = down.position
+            .then(
+                if (!state.dismissed) {
+                    Modifier.pointerInput(state.dismissed) {
+                        val slop = viewConfiguration.touchSlop
+                        awaitPointerEventScope {
+                            while (true) {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                val sheet = state.sheet
+                                var holding = false
+                                var travelled = 0f
+                                var previousPosition = down.position
 
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
-                            if (!change.pressed) break
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                    if (!change.pressed) break
 
-                            travelled += (change.position - previousPosition).getDistance()
-                            previousPosition = change.position
+                                    travelled += (change.position - previousPosition).getDistance()
+                                    previousPosition = change.position
 
-                            if (!holding && travelled > slop && sheet != null && !state.dismissed) {
-                                holding = true
-                                state.wake()
-                                sheet.grab(down.position.x, down.position.y)
-                            }
-                            if (holding) {
-                                sheet?.dragTo(change.position.x, change.position.y)
-                                change.consume()
+                                    if (!holding && travelled > slop && sheet != null && !state.dismissed) {
+                                        holding = true
+                                        state.wake()
+                                        sheet.grab(down.position.x, down.position.y)
+                                    }
+                                    if (holding) {
+                                        sheet?.dragTo(change.position.x, change.position.y)
+                                        change.consume()
+                                    }
+                                }
+                                if (holding) sheet?.release()
                             }
                         }
-                        if (holding) sheet?.release()
                     }
-                }
-            }
+                } else Modifier
+            )
             .drawWithContent {
                 layer.record { this@drawWithContent.drawContent() }
                 @Suppress("UNUSED_EXPRESSION") state.tick
@@ -170,7 +174,7 @@ internal class Sheet(
     val cols: Int,
     private val width: Float,
     private val height: Float,
-    val texture: Bitmap,
+    var texture: Bitmap,
 ) {
     val rows = (cols * height / width).roundToInt().coerceIn(4, 80)
     private val stride = cols + 1

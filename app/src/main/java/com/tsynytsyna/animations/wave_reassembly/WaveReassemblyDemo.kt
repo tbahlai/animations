@@ -53,11 +53,14 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 private val photos = listOf(
-    "https://picsum.photos/id/29/800/600",
-    "https://picsum.photos/id/180/800/600",
-    "https://picsum.photos/id/169/800/600",
-    "https://picsum.photos/id/40/800/600",
-    "https://picsum.photos/id/15/800/600",
+    "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1080&q=85", // Antelope Sunbeam
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1080&q=85", // Deep Space Nebula
+    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1080&q=85", // Emerald Mountain Lake
+    "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1080&q=85", // Tokyo Neon Rain
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1080&q=85", // Alpine Peak
+    "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1080&q=85", // Sahara Sand Dunes
+    "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1080&q=85", // Prismatic Crystal
+    "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=1080&q=85", // Northern Lights Aurora
 )
 
 /** Length of the fake inference pass before the reconstruction starts. */
@@ -91,7 +94,8 @@ fun WaveReassemblyDemo(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 20.dp)
+            .background(Color(0xFF070B14))
+            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Header(
             onNextPhoto = {
@@ -238,6 +242,7 @@ private fun Header(onNextPhoto: () -> Unit, nextEnabled: Boolean) {
                 text = "Photo Enhancer",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
+                color = Color.White,
             )
         }
 

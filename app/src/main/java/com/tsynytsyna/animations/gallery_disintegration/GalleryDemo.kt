@@ -2,6 +2,7 @@ package com.tsynytsyna.animations.gallery_disintegration
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,11 +37,14 @@ import com.bumptech.glide.integration.compose.GlideImage
 import kotlinx.coroutines.launch
 
 private val photos = listOf(
-    "https://picsum.photos/id/29/800/600",
-    "https://picsum.photos/id/180/800/600",
-    "https://picsum.photos/id/169/800/600",
-    "https://picsum.photos/id/40/800/600",
-    "https://picsum.photos/id/15/800/600",
+    "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1080&q=85", // Neon Tokyo
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1080&q=85", // Cosmic Nebula
+    "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1080&q=85", // Antelope Beam
+    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1080&q=85", // Emerald Lake
+    "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1080&q=85", // Desert Dunes
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1080&q=85", // Alpine Crest
+    "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1080&q=85", // Prismatic Flare
+    "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=1080&q=85", // Aurora Borealis
 )
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -55,6 +59,7 @@ fun GalleryDemo(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(Color(0xFF070B14))
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -63,13 +68,14 @@ fun GalleryDemo(modifier: Modifier = Modifier) {
             Text(
                 text = "Photo Gallery",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = "${currentIndex + 1} / ${photos.size}",
-                color = Color.Gray,
+                color = Color(0xFF94A3B8),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.End
             )
