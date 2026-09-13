@@ -10,6 +10,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,9 +45,6 @@ fun ElasticPullRefreshHeader(
     val isRefreshing = state.isRefreshing
     val progress = state.progress
 
-    // If no pull and not refreshing, height is 0
-    if (pullPx <= 2f && !isRefreshing) return
-
     val infiniteTransition = rememberInfiniteTransition(label = "refreshWave")
     val wavePhase by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -59,17 +57,19 @@ fun ElasticPullRefreshHeader(
     )
 
     val n = word.length
-    val containerHeight = (pullPx / 2.7f).coerceIn(40f, 180f).dp
     val spline = remember { Path() }
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(containerHeight),
+            .height(140.dp)
+            .graphicsLayer {
+                alpha = if (isRefreshing) 1f else (pullPx / 40f).coerceIn(0f, 1f)
+            },
         contentAlignment = Alignment.Center
     ) {
         // Underlying Spring Tension Chords and Spline Ribbon
-        Canvas(modifier = Modifier.fillMaxWidth().height(containerHeight)) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
             val cx = size.width * 0.5f
             val cy = size.height * 0.42f
             val spacing = (size.width * 0.72f / (n.coerceAtLeast(1) - 1).coerceAtLeast(1)).coerceIn(32f, 85f)

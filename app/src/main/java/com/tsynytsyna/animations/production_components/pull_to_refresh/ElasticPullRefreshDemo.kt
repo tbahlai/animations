@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -151,23 +152,32 @@ fun ElasticPullRefreshDemo(modifier: Modifier = Modifier) {
                 )
         )
 
-        // Nested Scrollable Container
-        Column(
+        // Nested Scrollable Container with GPU-accelerated Layer Translation
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(state.nestedScrollConnection)
         ) {
-            // Elastic Kinetic Typography Header
+            // Elastic Kinetic Typography Header revealed behind/above feed
             ElasticPullRefreshHeader(
                 state = state,
                 word = selectedWord,
-                accentColor = Color(0xFFFF2A55)
+                accentColor = Color(0xFFFF2A55),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .graphicsLayer {
+                        // Smooth parallax descent: Header settles into view as list pulls down
+                        translationY = ((state.effectivePullPx - 140f * density) * 0.35f).coerceAtMost(10f * density)
+                    }
             )
 
-            // Scrollable Feed List
+            // Scrollable Feed List translated via GPU RenderNode (ZERO relayout thrashing)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .graphicsLayer {
+                        translationY = state.effectivePullPx
+                    }
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {

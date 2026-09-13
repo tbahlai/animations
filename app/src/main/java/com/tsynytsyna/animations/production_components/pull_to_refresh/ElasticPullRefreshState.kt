@@ -85,17 +85,20 @@ class ElasticPullRefreshState(
 
     val nestedScrollConnection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            // If the user touches down / drags during settling, immediately interrupt!
+            // If user touches/drags during settling, immediately interrupt!
             if (source == NestedScrollSource.UserInput && settlingJob?.isActive == true) {
                 interruptSettling("onPreScroll")
             }
 
-            // When already pulled down, scrolling up collapses pull first
+            // When already pulled down, scrolling up collapses pull symmetrically
             if (rawPullPx > 0f && available.y < 0f) {
                 motionState = PullMotionState.DRAGGING
-                val consumed = available.y.coerceAtLeast(-rawPullPx)
-                rawPullPx += consumed
-                return Offset(0f, consumed)
+                val resistance = 0.52f
+                val pullDelta = available.y * resistance
+                val newPull = (rawPullPx + pullDelta).coerceAtLeast(0f)
+                val consumedY = (newPull - rawPullPx) / resistance
+                rawPullPx = newPull
+                return Offset(0f, consumedY)
             }
             return Offset.Zero
         }
@@ -123,13 +126,16 @@ class ElasticPullRefreshState(
             val flingY = available.y
             lastReleaseVelocity = flingY
 
-            // Scale release velocity (px/sec) into spring coordinate space
-            val releaseVelocity = (flingY * 0.65f).coerceIn(-4500f, 4500f)
+            // If we are pulled down, consume fling velocity into the spring
+            if (rawPullPx > 0f) {
+                val releaseVelocity = (flingY * 0.52f).coerceIn(-4000f, 4000f)
 
-            if (rawPullPx >= triggerThresholdPx && !isRefreshing) {
-                triggerRefresh(initialVelocity = releaseVelocity)
-            } else {
-                animateToTarget(targetValue = 0f, initialVelocity = releaseVelocity)
+                if (rawPullPx >= triggerThresholdPx && !isRefreshing) {
+                    triggerRefresh(initialVelocity = releaseVelocity)
+                } else {
+                    animateToTarget(targetValue = 0f, initialVelocity = releaseVelocity)
+                }
+                return available
             }
             return Velocity.Zero
         }
