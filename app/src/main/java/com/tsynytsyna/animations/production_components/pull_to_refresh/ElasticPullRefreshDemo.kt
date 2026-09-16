@@ -46,6 +46,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -157,6 +161,19 @@ fun ElasticPullRefreshDemo(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(state.nestedScrollConnection)
+                .pointerInput(state) {
+                    awaitEachGesture {
+                        awaitFirstDown(requireUnconsumed = false)
+                        state.onPointerDown()
+                        try {
+                            do {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                            } while (event.changes.any { it.pressed })
+                        } finally {
+                            state.onPointerRelease()
+                        }
+                    }
+                }
         ) {
             // Elastic Kinetic Typography Header revealed behind/above feed
             ElasticPullRefreshHeader(

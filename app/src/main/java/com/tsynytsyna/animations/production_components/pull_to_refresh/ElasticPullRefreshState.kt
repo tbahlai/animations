@@ -56,6 +56,9 @@ class ElasticPullRefreshState(
     var interruptionsCount by mutableIntStateOf(0)
         private set
 
+    var isPointerDown by mutableStateOf(false)
+        private set
+
     val effectivePullPx: Float
         get() {
             val ratio = (rawPullPx / maxPullPx).coerceIn(0f, 2.5f)
@@ -83,10 +86,34 @@ class ElasticPullRefreshState(
         }
     }
 
+    fun onPointerDown() {
+        isPointerDown = true
+        if (settlingJob?.isActive == true) {
+            interruptSettling("Pointer down")
+        }
+    }
+
+    fun onPointerRelease() {
+        isPointerDown = false
+        // Settle if rawPullPx is lingering > 0 and no active settling job is running
+        if (rawPullPx > 0f && settlingJob?.isActive != true) {
+            if (rawPullPx >= triggerThresholdPx && !isRefreshing) {
+                triggerRefresh()
+            } else if (!isRefreshing) {
+                animateToTarget(targetValue = 0f)
+            } else {
+                animateToTarget(targetValue = refreshingRestingPx * 1.15f)
+            }
+        }
+    }
+
     val nestedScrollConnection = object : NestedScrollConnection {
         override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            // If user touches/drags during settling, immediately interrupt!
-            if (source == NestedScrollSource.UserInput && settlingJob?.isActive == true) {
+            // Strictly require direct UserInput to manipulate pull state
+            if (source != NestedScrollSource.UserInput) return Offset.Zero
+
+            // If user touches/drags during settling, immediately interrupt
+            if (settlingJob?.isActive == true) {
                 interruptSettling("onPreScroll")
             }
 
@@ -108,9 +135,12 @@ class ElasticPullRefreshState(
             available: Offset,
             source: NestedScrollSource
         ): Offset {
+            // Strictly require direct UserInput (ignore inertia fling SideEffect)
+            if (source != NestedScrollSource.UserInput) return Offset.Zero
+
             // Overscroll pulling down when at the top of the scrollable container
             if (available.y > 0f) {
-                if (source == NestedScrollSource.UserInput && settlingJob?.isActive == true) {
+                if (settlingJob?.isActive == true) {
                     interruptSettling("onPostScroll")
                 }
 
@@ -125,6 +155,7 @@ class ElasticPullRefreshState(
         override suspend fun onPreFling(available: Velocity): Velocity {
             val flingY = available.y
             lastReleaseVelocity = flingY
+            isPointerDown = false
 
             // If we are pulled down, consume fling velocity into the spring
             if (rawPullPx > 0f) {
@@ -132,9 +163,20 @@ class ElasticPullRefreshState(
 
                 if (rawPullPx >= triggerThresholdPx && !isRefreshing) {
                     triggerRefresh(initialVelocity = releaseVelocity)
-                } else {
+                } else if (!isRefreshing) {
                     animateToTarget(targetValue = 0f, initialVelocity = releaseVelocity)
+                } else {
+                    animateToTarget(targetValue = refreshingRestingPx * 1.15f, initialVelocity = releaseVelocity)
                 }
+                return available
+            }
+            return Velocity.Zero
+        }
+
+        override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+            // Safety net: Settle any lingering overscroll immediately
+            if (rawPullPx > 0f && settlingJob?.isActive != true) {
+                onPointerRelease()
                 return available
             }
             return Velocity.Zero
@@ -206,6 +248,7 @@ class ElasticPullRefreshState(
             } catch (e: CancellationException) {
                 // Interrupted by user touch — freeze at current value
                 rawPullPx = animatableOffset.value
+                throw e
             } finally {
                 if (settlingJob?.isActive != true && motionState == PullMotionState.SETTLING) {
                     motionState = if (isRefreshing) PullMotionState.REFRESHING else PullMotionState.IDLE
