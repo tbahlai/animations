@@ -1,5 +1,6 @@
 package com.tsynytsyna.animations.glass_shatter
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,11 +31,14 @@ import com.tsynytsyna.animations.swipe_card.SwipeCard
 import com.tsynytsyna.animations.swipe_card.rememberSwipeCardState
 
 private val photos = listOf(
-    "https://picsum.photos/id/29/800/600",
-    "https://picsum.photos/id/180/800/600",
-    "https://picsum.photos/id/169/800/600",
-    "https://picsum.photos/id/40/800/600",
-    "https://picsum.photos/id/15/800/600",
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1080&q=85", // Glass Skyscraper
+    "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1080&q=85", // Prismatic Crystal
+    "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1080&q=85", // Tokyo Neon
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1080&q=85", // Alpine Peak
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1080&q=85", // Cosmic Nebula
+    "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1080&q=85", // Golden Gate
+    "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1080&q=85", // Antelope Light
+    "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1080&q=85", // Sahara Sand
 )
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -46,6 +50,7 @@ fun GlassShatterEffectDemo(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(Color(0xFF070B14))
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -60,7 +65,7 @@ fun GlassShatterEffectDemo(modifier: Modifier = Modifier) {
                 GlassShatter(
                     state = shatter,
                     modifier = Modifier.fillMaxSize(),
-                    tapEnabled = false,
+                    tapEnabled = true,
                 ) {
                     GlideImage(
                         model = photos[deck.currentIndex],

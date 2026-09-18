@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -49,6 +50,7 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 data class SortOption<T>(
     val label: String,
@@ -71,7 +73,7 @@ fun <T : Any> PolaroidScatter(
     sortOptions: List<SortOption<T>>,
     modifier: Modifier = Modifier,
     columns: Int = 3,
-    backgroundColor: Color = Color(0xFFF2F0E8),
+    backgroundColor: Color = Color(0xFF070B14),
     cardColor: Color = Color.White,
     itemKey: (T) -> Any = { it },
     content: @Composable (T) -> Unit,
@@ -87,7 +89,7 @@ fun <T : Any> PolaroidScatter(
 
     LaunchedEffect(selectedSort, scatterKey) {
         isScattered = true
-        delay(100)
+        delay(100.milliseconds)
         isScattered = false
     }
 
@@ -154,17 +156,31 @@ private fun <T> SortChips(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
     ) {
         options.forEachIndexed { index, option ->
             FilterChip(
                 selected = selectedIndex == index,
                 onClick = { onSelect(index) },
-                label = { Text(option.label, fontSize = 12.sp) },
+                label = {
+                    Text(
+                        text = option.label,
+                        fontSize = 12.sp,
+                        fontWeight = if (selectedIndex == index) FontWeight.Bold else FontWeight.Normal,
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFF333333),
-                    selectedLabelColor = Color.White
+                    containerColor = Color(0xFF131C2E),
+                    labelColor = Color(0xFF94A3B8),
+                    selectedContainerColor = Color(0xFF64DD17).copy(alpha = 0.2f),
+                    selectedLabelColor = Color(0xFF76FF03),
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = selectedIndex == index,
+                    borderColor = Color(0xFF1E293B),
+                    selectedBorderColor = Color(0xFF64DD17).copy(alpha = 0.6f),
                 )
             )
         }

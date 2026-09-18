@@ -122,21 +122,22 @@ internal class Strip(
     val delay: Float,
 )
 
+private val stripPaint = Paint()
+
 private fun DrawScope.drawStrips(strips: List<Strip>, p: Float) {
-    val paint = Paint()
     drawIntoCanvas { canvas ->
         for (strip in strips) {
             val localP = ((p - strip.delay) / 0.3f).coerceIn(0f, 1f)
             val alpha = 1f - localP
             if (alpha <= 0f) continue
-            paint.alpha = alpha
+            stripPaint.alpha = alpha
             canvas.drawImageRect(
                 image = strip.bitmap,
                 srcOffset = IntOffset.Zero,
                 srcSize = IntSize(strip.bitmap.width, strip.bitmap.height),
                 dstOffset = IntOffset(strip.x, 0),
                 dstSize = IntSize(strip.width, strip.height),
-                paint = paint
+                paint = stripPaint
             )
         }
     }
@@ -191,7 +192,12 @@ private fun buildEffect(source: ImageBitmap): Pair<List<Particle>, List<Strip>> 
         }
     }
 
-    val step = 10
+    val tier = com.tsynytsyna.animations.core.DeviceTierManager.getTier()
+    val step = when (tier) {
+        com.tsynytsyna.animations.core.PerformanceTier.LOW -> 16
+        com.tsynytsyna.animations.core.PerformanceTier.MID -> 12
+        com.tsynytsyna.animations.core.PerformanceTier.HIGH -> 10
+    }
     val particles = buildList {
         for (y in 0 until h step step) {
             for (x in 0 until w step step) {

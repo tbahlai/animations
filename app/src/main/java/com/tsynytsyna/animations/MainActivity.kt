@@ -6,8 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import com.tsynytsyna.animations.off_the_wall.OffTheWallDemo
+import com.tsynytsyna.animations.showcase.ShowcaseNavigator
 import com.tsynytsyna.animations.ui.theme.AnimationsTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             AnimationsTheme {
-                OffTheWallDemo(Modifier)
+                ShowcaseNavigator(Modifier.fillMaxSize())
             }
         }
     }

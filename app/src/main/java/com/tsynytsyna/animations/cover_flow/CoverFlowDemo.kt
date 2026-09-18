@@ -20,14 +20,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private val covers = listOf(
-    "https://picsum.photos/id/1084/600/600",
-    "https://picsum.photos/id/1080/600/600",
-    "https://picsum.photos/id/1074/600/600",
-    "https://picsum.photos/id/1062/600/600",
-    "https://picsum.photos/id/1060/600/600",
-    "https://picsum.photos/id/1059/600/600",
-    "https://picsum.photos/id/1050/600/600",
-    "https://picsum.photos/id/1044/600/600",
+    "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1080&q=85", // Cyberpunk Tokyo Neon
+    "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=1080&q=85", // Northern Lights Aurora
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1080&q=85", // Deep Space Nebula
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1080&q=85", // Alpine Alpenglow
+    "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1080&q=85", // Desert Sand Dunes
+    "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1080&q=85", // Prismatic Crystal
+    "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1080&q=85", // Golden Gate Mist
+    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1080&q=85", // Emerald Mountain Lake
+    "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1080&q=85", // Twilight Ocean Coast
+    "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1080&q=85", // Cyberpunk Rain Highway
+    "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1080&q=85", // Ancient Foggy Redwoods
+    "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=1080&q=85", // Antelope Canyon Sunbeam
 )
 
 private val darkBg = Color(0xFF0B0B0F)
@@ -44,7 +48,7 @@ fun CoverFlowDemo(modifier: Modifier = Modifier) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(top = 32.dp),
+                .padding(top = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
