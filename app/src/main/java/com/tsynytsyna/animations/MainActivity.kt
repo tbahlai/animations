@@ -7,7 +7,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.Modifier
-import com.tsynytsyna.animations.off_the_wall.OffTheWallDemo
+import com.tsynytsyna.animations.diorama.DioramaDemo
 import com.tsynytsyna.animations.ui.theme.AnimationsTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             AnimationsTheme {
-                OffTheWallDemo(Modifier)
+                DioramaDemo(Modifier)
             }
         }
     }
