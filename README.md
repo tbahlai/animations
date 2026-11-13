@@ -1,7 +1,7 @@
 # Animations
 
-Animation and motion experiments in Jetpack Compose — dissolves, tears, liquid, galleries
-and one real cloth simulation. Each one lives in its own package with a demo screen and a
+Animation and motion experiments in Jetpack Compose — dissolves, tears, liquid, galleries,
+one real cloth simulation and a paper diorama that follows the gyroscope. Each one lives in its own package with a demo screen and a
 README explaining how it works.
 
 > **This is a learning project.** It exists to explore what Compose's `Canvas`,
@@ -9,6 +9,16 @@ README explaining how it works.
 > published library — copy what is useful, and expect to adapt it.
 
 Point `MainActivity` at any demo to run it.
+
+## Diorama
+
+Tilt the phone and the screen turns out to be cut from paper. Every element you lift slides
+over its own shadow and shows its cut edge. One modifier per element, `Modifier.diorama(depth, shape)`.
+It works on any screen and needs no wrapper.
+
+<img alt="Diorama preview" src="app/src/main/java/com/tsynytsyna/animations/diorama/Diorama.gif" width="800"/>
+
+[→ How it works](app/src/main/java/com/tsynytsyna/animations/diorama)
 
 ## Off The Wall
 
